@@ -6,6 +6,8 @@ VERSION = '0.1dev'
 requires = [
     'dumpling',
     'pyramid',
+    'pyramid_chameleon',
+    'pyramid_layout',
 ]
 
 setup(name='pamphlet',
@@ -16,5 +18,4 @@ setup(name='pamphlet',
       include_package_data=True,
       zip_safe=False,
       install_requires=requires,
-      """)
-
+     )
