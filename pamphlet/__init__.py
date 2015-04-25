@@ -26,6 +26,8 @@ def root_finder(root_folder_factory=HomePage):
 
 
 BODY = re.compile('<body([^>]*)>')
+TITLE = re.compile('<title>(.*)</title>', flags=re.I)
+
 
 def pamphlet_tween_factory(handler, registry):
     def pamphlet_tween(request):
@@ -37,10 +39,16 @@ def pamphlet_tween_factory(handler, registry):
             text = BODY.sub(
                 lambda m: '<body%s%s>'% (m.groups()[0], onload),
                 response.text).encode('utf8')
+            title = TITLE.search(response.text)
+            title = title.groups()[0] if title else ''
+            def url(path):
+                return request.static_url('pamphlet:static/' + path)
             return render_to_response(
                 'templates/contentbar.pt',
                 {'contentsrc': 'data:text/html;charset=utf8;base64,' +
-                               str(base64.b64encode(text), 'utf8')},
+                               str(base64.b64encode(text), 'utf8'),
+                 'title': title,
+                 'url': url},
                 request=request,
                 response=response)
         return response
@@ -50,4 +58,5 @@ def pamphlet_tween_factory(handler, registry):
 def includeme(config):
     config.set_root_factory(root_finder())
     config.add_tween('pamphlet.pamphlet_tween_factory')
+    config.add_static_view('pamphlet-static', 'pamphlet:static')
     config.scan('.')
