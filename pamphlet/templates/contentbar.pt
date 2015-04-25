@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+  <body>
+    <p>Ha ha!</p>
+    <script language="javascript" type="text/javascript">
+      window.addEventListener('message', function(event) {
+        var main = document.getElementById('main-page');
+        var height = event.data;
+        main.height = height + 'px';
+      }, false)
+    </script>
+    <iframe seamless scrolling="no" id="main-page" src="${contentsrc}"
+        style="width: 100%; border: none;"></iframe>
+  </body>
+</html>
