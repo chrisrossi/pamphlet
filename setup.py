@@ -4,10 +4,8 @@ from setuptools import find_packages
 VERSION = '0.1dev'
 
 requires = [
-    'dumpling',
     'pyramid',
     'pyramid_chameleon',
-    'pyramid_layout',
 ]
 
 setup(name='pamphlet',

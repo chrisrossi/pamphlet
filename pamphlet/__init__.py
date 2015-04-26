@@ -1,28 +1,7 @@
-import acidfs
 import base64
-import dumpling
 import re
 
 from pyramid.renderers import render_to_response
-
-
-@dumpling.folder
-class Page(object):
-    title = dumpling.Field()
-    body = dumpling.Field()
-
-
-@dumpling.folder
-class HomePage(Page):
-    pass
-
-
-def root_finder(root_folder_factory=HomePage):
-    def factory(request):
-        settings = request.registry.settings
-        fs = acidfs.AcidFS(settings['pamphlet.repo'])
-        return dumpling.Store(fs, root_folder_factory).root()
-    return factory
 
 
 BODY = re.compile('<body([^>]*)>')
@@ -56,7 +35,5 @@ def pamphlet_tween_factory(handler, registry):
 
 
 def includeme(config):
-    config.set_root_factory(root_finder())
     config.add_tween('pamphlet.pamphlet_tween_factory')
     config.add_static_view('pamphlet-static', 'pamphlet:static')
-    config.scan('.')
