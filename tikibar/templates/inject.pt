@@ -1,0 +1,28 @@
+<script>
+  var tikibar = function() {
+
+    function set_height(height) {
+      $('#content-bar').height(height + 'px');
+    }
+
+    // Inject contentbar iframe
+    var contentbar_url = '${contentbar_url}';
+    $(document).ready(function() {
+      $('<iframe>')
+        .attr('id', 'content-bar')
+        .attr('src', contentbar_url)
+        .attr('seamless', '')
+        .attr('scrolling', 'no')
+        .attr('frameborder', '0')
+        .css('border', 'none')
+        .css('display', 'block')
+        .width('100%')
+        .height('50px')
+        .prependTo('body');
+    });
+
+    return {
+      set_height: set_height
+    }
+  }();
+</script>

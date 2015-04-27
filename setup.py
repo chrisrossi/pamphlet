@@ -8,10 +8,9 @@ requires = [
     'pyramid_chameleon',
 ]
 
-setup(name='pamphlet',
+setup(name='tikibar',
       version=VERSION,
-      description="Low powered CMS with focuse on ease of use for small "
-                  "number of non-expert content authors.",
+      description="Toolbar for basic CRUD operations on content.",
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
