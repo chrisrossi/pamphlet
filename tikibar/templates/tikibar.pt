@@ -15,7 +15,7 @@
     <![endif]-->
   </head>
   <body>
-    <nav class="navbar navbar-inverse navbar-static-top" id="content-bar">
+    <nav class="navbar navbar-inverse navbar-static-top" id="tikibar">
       <div class="container">
         <div class="navbar-header">
           <span class="navbar-brand">TikiBar</span>
@@ -29,7 +29,7 @@
     <script src="${url('vendor/bootstrap/js/bootstrap.min.js')}"></script>
     <script>
       $(document).ready(function(event) {
-          parent.tikibar.set_height($('#content-bar').height());
+          parent.tikibar.set_height($('#tikibar').height());
       });
     </script>
   </body>

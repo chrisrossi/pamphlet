@@ -2,15 +2,15 @@
   var tikibar = function() {
 
     function set_height(height) {
-      $('#content-bar').height(height + 'px');
+      $('#tikibar').height(height + 'px');
     }
 
-    // Inject contentbar iframe
-    var contentbar_url = '${contentbar_url}';
+    // Inject tikibar iframe
+    var tikibar_url = '${tikibar_url}';
     $(document).ready(function() {
       $('<iframe>')
-        .attr('id', 'content-bar')
-        .attr('src', contentbar_url)
+        .attr('id', 'tikibar')
+        .attr('src', tikibar_url)
         .attr('seamless', '')
         .attr('scrolling', 'no')
         .attr('frameborder', '0')
