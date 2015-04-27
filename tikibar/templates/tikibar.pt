@@ -20,9 +20,8 @@
         <div class="navbar-header">
           <span class="navbar-brand">TikiBar</span>
         </div>
-        <ul class="nav navbar-nav">
-          <li><a href="#">Edit this page</a></li>
-        </ul>
+        <button id="edit" type="button" class="btn btn-default navbar-btn">
+          Edit page</button>
         <tal:widgets repeat="widget widgets">
           <tal:widget replace="structure widget"/>
         </tal:widgets>
