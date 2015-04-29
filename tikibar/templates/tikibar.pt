@@ -20,6 +20,17 @@
         <div class="navbar-header">
           <span class="navbar-brand">TikiBar</span>
         </div>
+        <div class="btn-group" tal:condition="addables">
+          <button type="button" class="btn btn-default navbar-btn dropdown-toggle"
+            data-toggle="dropdown" aria-expanded="false">
+            Add <span class="caret"></span>
+            <ul class="dropdown-menu" role="menu">
+              <li tal:repeat="ct addables">
+                <a href="#">${ct.name}</a>
+              </li>
+            </ul>
+          </button>
+        </div>
         <button id="edit" type="button" class="btn btn-default navbar-btn">
           Edit page</button>
         <tal:widgets repeat="widget widgets">
