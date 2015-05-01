@@ -1,3 +1,4 @@
+from pyramid.events import BeforeRender, subscriber
 import venusian
 
 
@@ -64,8 +65,15 @@ class content_type(object):
         return wrapped
 
 
+@subscriber(BeforeRender)
+def add_tikibar_renderer_globals(event):
+    request = event['request']
+    event['tikibar_url'] = request.resource_url(
+        request.context, '@@tikibar')
+    event['tikibar_js_url'] = request.static_url('static/js/tikibar_launch.js')
+
+
 def includeme(config):
-    config.add_tween('tikibar.tween.tikibar_tween_factory')
     config.add_static_view('tikibar-static', 'tikibar:static')
     config.include('.config')
     config.scan()
