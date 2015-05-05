@@ -1,6 +1,10 @@
 from pyramid.events import BeforeRender, subscriber
 import venusian
 
+from . import form  # api
+
+assert form  # stfu pyflakes
+
 
 class widget(object):
     """
@@ -38,16 +42,15 @@ class content_type(object):
       The name of the content type.  Defaults to the name of the decorated
       class.
 
-    add_view
+    form_fields
 
-      The name of a view that can be used to add more instances of this type.
-      If omitted, this type is not addable from Tiki Bar.
+      Form fields to be used for adding and editing instances of this type.
 
     See :meth:`tikibar.config.add_tikibar_content_type`.
     """
-    def __init__(self, name=None, add_view=None):
+    def __init__(self, name=None, form_fields=None):
         self.name = name
-        self.add_view = add_view
+        self.form_fields = form_fields
 
     def __call__(self, wrapped):
         name = self.name
@@ -59,21 +62,31 @@ class content_type(object):
             config.add_tikibar_content_type(
                 wrapped,
                 name,
-                add_view=self.add_view)
+                form_fields=self.form_fields)
 
         info = venusian.attach(wrapped, callback, category='tikibar')
         return wrapped
 
 
+def tikibar_content_type(request):
+    cls = type(request.context)
+    for ct in request.registry['tikibar']['content_types'].values():
+        if ct['factory'] is cls:
+            return ct
+
+
 @subscriber(BeforeRender)
 def add_tikibar_renderer_globals(event):
     request = event['request']
-    event['tikibar_url'] = request.resource_url(
-        request.context, '@@tikibar')
-    event['tikibar_js_url'] = request.static_url('static/js/tikibar_launch.js')
+    if request:
+        event['tikibar_url'] = request.resource_url(
+            request.context, '@@tikibar')
+        event['tikibar_js_url'] = request.static_url('static/js/tikibar_launch.js')
 
 
 def includeme(config):
     config.add_static_view('tikibar-static', 'tikibar:static')
+    config.add_request_method(tikibar_content_type, reify=True)
+    config.add_renderer('html', '.views.html_renderer_factory')
     config.include('.config')
     config.scan()

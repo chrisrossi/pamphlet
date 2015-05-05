@@ -1,5 +1,7 @@
+from .form import content_form
 
-def add_tikibar_content_type(config, content_type, name=None, add_view=None):
+
+def add_tikibar_content_type(config, content_type, name=None, form_fields=None):
     """
     Add a content type.
 
@@ -14,10 +16,9 @@ def add_tikibar_content_type(config, content_type, name=None, add_view=None):
       The name for the content type.  If omitted, the name of the class is
       used.
 
-    add_view
+    form_fields
 
-      The name of a view that can be used to add more instances of this type.
-      If omitted, this type is not addable from Tiki Bar.
+      Form fields to be used for adding/editing instances of this type.
 
     """
     content_type = config.maybe_dotted(content_type)
@@ -30,13 +31,13 @@ def add_tikibar_content_type(config, content_type, name=None, add_view=None):
         config.object_description(content_type),
         'tikibar content type')
     introspectable['name'] = name
-    introspectable['add_view'] = add_view
 
     def register():
         types = config.registry['tikibar']['content_types']
-        types.setdefault(name, {}).update({
+        ct = types.setdefault(name, {})
+        ct.update({
             'factory': content_type,
-            'add_view': add_view,
+            'form': content_form(ct, *form_fields),
             'name': name})
 
     config.action(

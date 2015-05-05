@@ -8,7 +8,7 @@ function TikiBar(selector, url) {
             .css('bottom', 0)
             .css('left', 0)
             .css('display', 'none')
-            .css('overflow', 'auto')
+            .css('overflow', 'visible')
             .css('z-index', 1000)
             .css('outline', 0)
             .css('background', 'rgba(0, 0, 0, 0.8)')
@@ -26,10 +26,6 @@ function TikiBar(selector, url) {
             .appendTo(container);
         container.appendTo('body');
         container.fadeIn(); 
-        container.on('click', function(event) {
-            event.preventDefault();
-            dismiss();
-        });
     }
 
     function dismiss() {
@@ -37,6 +33,7 @@ function TikiBar(selector, url) {
     }
 
     function set_height(height) {
+        height = Math.max(height, 2000);
         $('#tikibar').height(height + 'px');
     }
 

@@ -14,36 +14,62 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body>
-    <nav class="navbar navbar-inverse navbar-static-top" id="tikibar">
-      <div class="container">
-        <div class="navbar-header">
-          <span class="navbar-brand">TikiBar</span>
-        </div>
-        <div class="btn-group" tal:condition="addables">
-          <button type="button" class="btn btn-default navbar-btn dropdown-toggle"
-            data-toggle="dropdown" aria-expanded="false">
-            Add <span class="caret"></span>
-            <ul class="dropdown-menu" role="menu">
-              <li tal:repeat="ct addables">
-                <a href="#">${ct.name}</a>
-              </li>
+  <body style="background: transparent;">
+    <div class="container">
+      <div class="panel panel-default">
+        <div class="panel-body">
+
+          <!-- Bar -->
+          <nav class="navbar navbar-default" id="tikibar">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <span class="navbar-brand">TikiBar</span>
+              </div>
+              <ul class="nav navbar-nav" tal:condition="addables">
+                <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+                    role="button" aria-expanded="false">
+                    Add <span class="caret"></span>
+                  </a>
+                  <ul class="dropdown-menu" role="menu">
+                    <li tal:repeat="ct addables">
+                      <a href="#" class="add-instance"
+                         data-content-type="${ct.name}">
+                        Add ${ct.name}
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+              <ul class="nav navbar-nav navbar-right">
+                <li><a href="#" class="close">&times;</a></li>
+              </ul>
+              <tal:widgets repeat="widget widgets">
+                <tal:widget replace="structure widget"/>
+              </tal:widgets>
+            </div>
+          </nav>
+
+          <!-- Tabs panel -->
+          <div role="tabpanel">
+            <!-- Tabs -->
+            <ul class="nav nav-tabs" role="tablist" id="tikibar-tabs">
             </ul>
-          </button>
+            
+            <!-- Panes -->
+            <div class="tab-content" id="tikibar-panels">
+            </div>
+          </div>
+
         </div>
-        <button id="edit" type="button" class="btn btn-default navbar-btn">
-          Edit page</button>
-        <tal:widgets repeat="widget widgets">
-          <tal:widget replace="structure widget"/>
-        </tal:widgets>
       </div>
-    </nav>
+    </div>
     <script src="${url('vendor/jquery/jquery-1.11.2.min.js')}"></script>
     <script src="${url('vendor/bootstrap/js/bootstrap.min.js')}"></script>
-    <script>
-      $(document).ready(function(event) {
-          parent.tikibar.set_height($('#tikibar').height());
-      });
+    <script src="${url('js/tikibar.js')}"></script>
+    <script tal:condition="request.tikibar_content_type">
+      tikibar.new_tab('Edit ${request.tikibar_content_type.name.title()}',
+                      '@@tikibar-edit');
     </script>
   </body>
 </html>
