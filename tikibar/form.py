@@ -1,142 +1,13 @@
-import re
-
+from kemmering import (
+    bind,
+    defer,
+    in_context,
+    format_context,
+    html,
+    tag,
+    text)
 
 _nodefault = object()
-
-
-class tag(object):
-    self_closing = False
-
-    def __init__(self, tag, **attrs):
-        if tag.endswith('/'):
-            self.self_closing = True
-            tag = tag[:-1]
-        self.tag = tag
-        self.attrs = {k: substitution(v) for k, v in attrs.items()}
-        self.children = ()
-
-    def __call__(self, *children):
-        def mkchild(x):
-            if isinstance(x, str):
-                x = text_substitution(x)
-            x.parent = self
-            return x
-        self.children = tuple(mkchild(x) for x in children)
-        return self
-
-    def __iter__(self):
-        return iter(self.children)
-
-    def render(self, context):
-        return HTML(self.__str__(context))
-
-    def __str__(self, context=None):
-        return ''.join(self._stream(context))
-
-    __html__ = __str__  # chameleon
-
-    def __repr__(self):
-        if self.self_closing and not self.children:
-            return 'tag(%s)' % repr(self.tag + '/')
-
-        if self.attrs:
-            attrs = ', ' + ', '.join(
-                ('%s=%s' % (k, repr(v)) for k, v in self.attrs.items())
-            )
-        else:
-            attrs = ''
-
-        children = ('(%s)' % ', '.join(map(repr, self.children))
-                    if self.children else '')
-        return 'tag(%s%s)%s' % (repr(self.tag), attrs, children)
-
-    def _stream(self, context):
-        attrs = {k: _maybe_call(v, context) for k, v in self.attrs.items()}
-        if attrs:
-            attrs = ' ' + ' '.join(
-                ('%s="%s"' % (k.lstrip('_'), v) for k, v in attrs.items())
-            )
-        else:
-            attrs = ''
-
-        if self.self_closing and not self.children:
-            yield '<%s%s/>' % (self.tag, attrs)
-            return
-
-        yield '<%s%s>' % (self.tag, attrs)
-        for child in self.children:
-            for x in _maybe_call(child, context)._stream(context):
-                yield x
-        yield '</%s>' % self.tag
-
-
-def _maybe_call(f, context):
-    if callable(f) and not isinstance(f, tag):
-        return f(context)
-    return f
-
-
-class text(str):
-
-    def _stream(self, context):
-        yield self
-
-
-def text_substitution(s):
-    x = substitution(s)
-    if callable(x):
-        def callx(context):
-            s = x(context)
-            return text(s) if s is not None else None
-        return callx
-    return text(s)
-
-
-_subpat = re.compile(r'\${([^}]+)}')
-
-
-def substitution(s):
-    if not isinstance(s, str):
-        return s
-
-    toks = _subpat.split(s)
-    if len(toks) == 1:
-        return s
-
-    def mksub(name):
-        pipe = name.rfind('|')
-        if pipe == -1:
-            name, default = name, _nodefault
-        else:
-            name, default = name[:pipe], name[pipe + 1:]
-        path = name.split()
-
-        def sub(context):
-            value = context
-            for name in path:
-                try:
-                    value = value[name]
-                except KeyError:
-                    value = default
-                    break
-            if value is _nodefault:
-                raise KeyError(name, value)
-            return value
-
-        return sub
-
-    if len(toks) == 3 and not (toks[0] or toks[2]):
-        return mksub(toks[1])
-
-    literals = toks[::2]
-    subs = [mksub(tok) for tok in toks[1::2]]
-
-    def sub(context):
-        return ''.join(
-            interleave(literals, (f(context) for f in subs))
-        )
-
-    return sub
 
 
 class form(tag):
@@ -153,7 +24,7 @@ class form(tag):
 
     def __call__(self, *children):
         super(form, self).__call__(
-            tag('h1')(self.title),
+            html.h1()(self.title),
             *children
         )
         self.fields = tuple(
@@ -165,6 +36,13 @@ class form(tag):
         return tuple(
             (field.name, params[field.name])
             for field in self.fields)
+
+    def _copy(self, attrs, children):
+        obj = super(form, self)._copy(attrs, children)
+        obj.name = self.name
+        obj.title = self.title
+        obj.fields = self.fields
+        return obj
 
 
 class field(tag):
@@ -182,35 +60,43 @@ class field(tag):
 
         self.id = id = 'input-' + name
 
-        super(field, self).__init__('div', _class='form-group')
-        html = (
-            tag('label', _for=id)(title),
+        super(field, self).__init__('div', class_='form-group')
+        self(
+            html.label(for_=id)(title),
             widget(self),
         )
         if description:
-            html += (tag('p', _class='help-block')(description),)
-        self(*html)
+            self(html.p(class_='help-block')(description),)
+
+    def _copy(self, attrs, children):
+        obj = super(field, self)._copy(attrs, children)
+        obj.name = self.name
+        obj.widget = self.widget
+        obj.required = self.required
+        obj.validator = self.validator
+        obj.title = self.title
+        obj.description = self.description
+        obj.id = self.id
+        return obj
 
 
 def text_widget(field):
-    return tag(
-        'input/',
-        _type='text',
-        _class='form-control',
-        _name=field.name,
+    return html.input(
+        type_='text',
+        class_='form-control',
+        name=field.name,
         id=field.id,
-        value='${context %s|}' % field.name,
+        value=in_context(['data', field.name], None),
     )
 
 
 def textarea_widget(field, rows=5):
-    return tag(
-        'textarea',
-        _class='form-control',
-        _name=field.name,
+    return html.textarea(
+        class_='form-control',
+        name_=field.name,
         id=field.id,
         rows=rows,
-    )('${context %s|}' % field.name)
+    )(in_context(['data', field.name], ''))
 
 
 class content_form(object):
@@ -220,35 +106,36 @@ class content_form(object):
         self.fields = fields
 
         form_fields = fields + (
-            tag('button',
-                _type='submit',
-                _class='btn btn-default')('Save'),
+            html.button(
+                type_='submit',
+                class_='btn btn-default')('Save'),
         )
 
+        @defer
         def title(context):
             return text('%s %s' % (
                 context['action'].title(),
                 context['content_type']['name']))
 
-        self.form = form('${action}-page', title)(*form_fields)
+        self.form = form(format_context('{action}-page'), title)(*form_fields)
 
     def edit_form(self, instance):
-        context = {
+        data = {
             field.name: getattr(instance, field.name, '')
             for field in self.fields
         }
-        return self.form.render({
+        return HTML(bind(self.form, {
             'action': 'edit',
             'content_type': self.content_type,
-            'context': context,
-        })
+            'data': data,
+        }))
 
     def add_form(self):
-        return self.form.render({
+        return HTML(bind(self.form, {
             'action': 'add',
             'content_type': self.content_type,
-            'context': {}
-        })
+            'data': {}
+        }))
 
     def validate(self, params):
         return self.form.validate(params)
@@ -282,4 +169,3 @@ class HTML(str):
 
     def __html__(self):
         return self
-

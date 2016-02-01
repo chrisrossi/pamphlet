@@ -6,6 +6,7 @@ VERSION = '0.1dev'
 requires = [
     'pyramid',
     'pyramid_chameleon',
+    'kemmering',
     'toolz',
 ]
 
