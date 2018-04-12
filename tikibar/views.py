@@ -2,8 +2,13 @@ import re
 
 from pyramid.view import view_config, view_defaults
 
+from .security import TIKI_MANAGE
 
-@view_config(name='tikibar', renderer='templates/tikibar.pt')
+
+@view_config(
+    name='tikibar',
+    permission=TIKI_MANAGE,
+    renderer='templates/tikibar.pt')
 def tikibar(context, request):
     addables = [
         ct for ct in request.registry['tikibar']['content_types'].values()]
@@ -18,7 +23,10 @@ def tikibar(context, request):
     }
 
 
-@view_defaults(name='tikibar-add-instance')
+@view_defaults(
+    name='tikibar-add-instance',
+    permission=TIKI_MANAGE,
+)
 class AddInstanceViews(object):
 
     def __init__(self, context, request):
@@ -45,7 +53,10 @@ class AddInstanceViews(object):
         return request.resource_url(instance)
 
 
-@view_defaults(name='tikibar-edit')
+@view_defaults(
+    name='tikibar-edit',
+    permission=TIKI_MANAGE,
+)
 class EditViews(object):
 
     def __init__(self, context, request):
